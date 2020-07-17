@@ -63,7 +63,7 @@ export default function ToolbarLinkControl( {
 	);
 
 	const renderSuggestions = ( props ) => (
-		<Popover>
+		<Popover focusOnMount={ false }>
 			<LinkControlSearchResults { ...props } />
 		</Popover>
 	);
@@ -73,6 +73,7 @@ export default function ToolbarLinkControl( {
 			{ ...props }
 			className="toolbar-link-control__input-control"
 			ref={ ref }
+			onChange={ ( value, { event } ) => props.onChange( event ) }
 			prefix={
 				<div className="toolbar-link-control__icon-wrapper">
 					<Icon icon={ linkIcon } />
