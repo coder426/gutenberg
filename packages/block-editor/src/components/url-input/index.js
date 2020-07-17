@@ -383,6 +383,7 @@ class URLInput extends Component {
 			placeholder = __( 'Paste URL or type to search' ),
 			value = '',
 			autoFocus = true,
+			inputComponent: InputComponent = 'input',
 			__experimentalShowInitialSuggestions = false,
 		} = this.props;
 
@@ -423,7 +424,7 @@ class URLInput extends Component {
 					'is-full-width': isFullWidth,
 				} ) }
 			>
-				<input
+				<InputComponent
 					className="block-editor-url-input__input"
 					autoFocus={ autoFocus }
 					type="text"
