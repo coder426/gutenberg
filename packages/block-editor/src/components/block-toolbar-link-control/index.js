@@ -40,24 +40,23 @@ export default function ToolbarLinkControl( {
 } ) {
 	const [ currentLink, setCurrentLink ] = useState( initialLink );
 	const { opensInNewTab, rel } = currentLink;
-	const [ editUrl, setEditUrl ] = useState( '' );
+	const [ editUrl, setEditUrl ] = useState(
+		computeNiceURL( currentLink.url )
+	);
 	const [ shouldShowSuggestions, setShouldShowSuggestions ] = useState(
 		true
 	);
 
-	const updateCurrentLink = ( data ) => {
+	const updateCurrentLink = ( data, replace = false ) => {
 		setCurrentLink( {
-			...currentLink,
-			url: editUrl,
+			...( replace ? {} : currentLink ),
 			...data,
+			url: data.url ? computeNiceURL( data.url ) : editUrl,
 		} );
 	};
 
-	useEffect( () => {
-		setEditUrl( computeNiceURL( currentLink.url ) );
-	}, [ currentLink ] );
-
 	const inputRef = useRef();
+	const inputGroupRef = useRef();
 
 	useEffect( () => {
 		// eslint-disable-next-line @wordpress/react-no-unsafe-timeout
@@ -80,7 +79,7 @@ export default function ToolbarLinkControl( {
 	);
 
 	const renderSuggestions = ( props ) => (
-		<Popover focusOnMount={ false }>
+		<Popover focusOnMount={ false } position="bottom">
 			<LinkControlSearchResults { ...props } />
 		</Popover>
 	);
@@ -102,6 +101,7 @@ export default function ToolbarLinkControl( {
 							<Icon icon={ linkIcon } />
 						</div>
 					}
+					data-experimental-toolbar-item={ true }
 				/>
 			);
 		} );
@@ -109,13 +109,13 @@ export default function ToolbarLinkControl( {
 
 	return (
 		<BlockControls __experimentalIsExpanded={ true }>
-			<ToolbarGroup className="toolbar-link-control__input-group">
+			<ToolbarGroup
+				className="toolbar-link-control__input-group"
+				ref={ inputGroupRef }
+			>
 				<ToolbarItem ref={ inputRef }>
 					{ ( toolbarItemProps ) => (
-						<div
-							{ ...toolbarItemProps }
-							className="toolbar-link-control__input-wrapper"
-						>
+						<div className="toolbar-link-control__input-wrapper">
 							<LinkControlSearchInput
 								inputComponent={ inputComponent }
 								currentLink={ currentLink }
@@ -123,12 +123,17 @@ export default function ToolbarLinkControl( {
 								renderSuggestions={ renderSuggestions }
 								value={ editUrl }
 								onCreateSuggestion={ createPage }
-								onChange={ setEditUrl }
-								onSelect={ ( link ) => setCurrentLink( link ) }
+								onChange={ ( url ) => {
+									setEditUrl( computeNiceURL( url ) );
+								} }
+								onSelect={ ( link ) =>
+									updateCurrentLink( link, true )
+								}
 								showInitialSuggestions={ false }
 								allowDirectEntry
 								showSuggestions={ shouldShowSuggestions }
 								withCreateSuggestion
+								{ ...toolbarItemProps }
 							/>
 						</div>
 					) }
@@ -136,7 +141,7 @@ export default function ToolbarLinkControl( {
 				<ToolbarItem>
 					{ ( toolbarItemProps ) => (
 						<DropdownMenu
-							position="bottom"
+							popoverProps={ { position: 'bottom' } }
 							className="link-option"
 							closeOnClick={ false }
 							contentClassName="link-options__popover"

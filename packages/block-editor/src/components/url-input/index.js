@@ -38,7 +38,7 @@ class URLInput extends Component {
 		this.handleOnClick = this.handleOnClick.bind( this );
 		this.bindSuggestionNode = this.bindSuggestionNode.bind( this );
 		this.autocompleteRef = props.autocompleteRef || createRef();
-		this.inputRef = createRef();
+		this.inputRef = props.inputRef || createRef();
 		this.updateSuggestions = throttle(
 			this.updateSuggestions.bind( this ),
 			200
@@ -345,7 +345,7 @@ class URLInput extends Component {
 	handleOnClick( suggestion ) {
 		this.selectLink( suggestion );
 		// Move focus to the input field when a link suggestion is clicked.
-		this.inputRef.current.focus();
+		this.inputRef.current?.focus();
 	}
 
 	static getDerivedStateFromProps(
