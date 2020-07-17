@@ -7,7 +7,7 @@ import { noop, omit } from 'lodash';
  * WordPress dependencies
  */
 import { useInstanceId } from '@wordpress/compose';
-import { useState } from '@wordpress/element';
+import { useState, useEffect } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -116,7 +116,7 @@ const LinkControlSearchInput = ( {
 				inputComponent={ inputComponent }
 				placeholder={ placeholder ?? __( 'Search or type url' ) }
 				__experimentalRenderSuggestions={
-					showSuggestions ? handleRenderSuggestions : null
+					showSuggestions ? handleRenderSuggestions : () => null
 				}
 				__experimentalFetchLinkSuggestions={ searchHandler }
 				__experimentalHandleURLSuggestions={ true }

@@ -16,7 +16,13 @@ import {
 	link as linkIcon,
 } from '@wordpress/icons';
 import { __ } from '@wordpress/i18n';
-import { useEffect, useRef, useState, forwardRef } from '@wordpress/element';
+import {
+	useEffect,
+	useRef,
+	useState,
+	forwardRef,
+	useMemo,
+} from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -33,8 +39,19 @@ export default function ToolbarLinkControl( {
 	onChange,
 } ) {
 	const [ currentLink, setCurrentLink ] = useState( initialLink );
-	const { url, label, opensInNewTab, nofollow } = currentLink;
+	const { opensInNewTab, rel } = currentLink;
 	const [ editUrl, setEditUrl ] = useState( '' );
+	const [ shouldShowSuggestions, setShouldShowSuggestions ] = useState(
+		true
+	);
+
+	const updateCurrentLink = ( data ) => {
+		setCurrentLink( {
+			...currentLink,
+			url: editUrl,
+			...data,
+		} );
+	};
 
 	useEffect( () => {
 		setEditUrl( computeNiceURL( currentLink.url ) );
@@ -68,19 +85,27 @@ export default function ToolbarLinkControl( {
 		</Popover>
 	);
 
-	const inputComponent = forwardRef( ( props, ref ) => (
-		<InputControl
-			{ ...props }
-			className="toolbar-link-control__input-control"
-			ref={ ref }
-			onChange={ ( value, { event } ) => props.onChange( event ) }
-			prefix={
-				<div className="toolbar-link-control__icon-wrapper">
-					<Icon icon={ linkIcon } />
-				</div>
-			}
-		/>
-	) );
+	const inputComponent = useMemo( () => {
+		return forwardRef( ( props, ref ) => {
+			return (
+				<InputControl
+					{ ...props }
+					className="toolbar-link-control__input-control"
+					ref={ ref }
+					autoFocus={ false }
+					onChange={ ( value, { event } ) => {
+						setShouldShowSuggestions( true );
+						props.onChange( event );
+					} }
+					prefix={
+						<div className="toolbar-link-control__icon-wrapper">
+							<Icon icon={ linkIcon } />
+						</div>
+					}
+				/>
+			);
+		} );
+	}, [] );
 
 	return (
 		<BlockControls __experimentalIsExpanded={ true }>
@@ -102,7 +127,7 @@ export default function ToolbarLinkControl( {
 								onSelect={ ( link ) => setCurrentLink( link ) }
 								showInitialSuggestions={ false }
 								allowDirectEntry
-								showSuggestions
+								showSuggestions={ shouldShowSuggestions }
 								withCreateSuggestion
 							/>
 						</div>
@@ -116,6 +141,11 @@ export default function ToolbarLinkControl( {
 							closeOnClick={ false }
 							contentClassName="link-options__popover"
 							icon={ arrowDownIcon }
+							onToggle={ ( isOpen ) => {
+								if ( isOpen ) {
+									setShouldShowSuggestions( false );
+								}
+							} }
 							toggleProps={ {
 								...toolbarItemProps,
 								name: 'link-options',
@@ -142,7 +172,7 @@ export default function ToolbarLinkControl( {
 											</>
 										),
 										onClick: () => {
-											onChange( {
+											updateCurrentLink( {
 												opensInNewTab: ! opensInNewTab,
 											} );
 										},
@@ -153,14 +183,18 @@ export default function ToolbarLinkControl( {
 												<span className="toolbar-link-control__toggle-menu-item-label">
 													Add nofollow attribute
 												</span>
-												{ nofollow && (
+												{ rel === 'nofollow' && (
 													<Icon icon={ checkIcon } />
 												) }
 											</>
 										),
 										onClick: () => {
-											onChange( {
-												nofollow: ! nofollow,
+											updateCurrentLink( {
+												rel:
+													currentLink.rel ===
+													'nofollow'
+														? ''
+														: 'nofollow',
 											} );
 										},
 									},

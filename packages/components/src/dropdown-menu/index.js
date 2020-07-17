@@ -42,6 +42,8 @@ function DropdownMenu( {
 	popoverProps,
 	toggleProps,
 	menuProps,
+	onToggle: notifyOnToggle,
+	closeOnClick = true,
 	disableOpenOnArrowDown = false,
 	// The following props exist for backward compatibility.
 	menuLabel,
@@ -86,6 +88,7 @@ function DropdownMenu( {
 		<Dropdown
 			className={ classnames( 'components-dropdown-menu', className ) }
 			popoverProps={ mergedPopoverProps }
+			onToggle={ notifyOnToggle }
 			renderToggle={ ( { isOpen, onToggle } ) => {
 				const openOnArrowDown = ( event ) => {
 					if ( disableOpenOnArrowDown ) {
@@ -159,9 +162,11 @@ function DropdownMenu( {
 									].join() }
 									onClick={ ( event ) => {
 										event.stopPropagation();
-										props.onClose();
+										if ( closeOnClick ) {
+											props.onClose();
+										}
 										if ( control.onClick ) {
-											control.onClick();
+											control.onClick( props.onClose );
 										}
 									} }
 									className={ classnames(
